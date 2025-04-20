@@ -1,15 +1,16 @@
 'use client'
 
-import { useState } from "react"
-import { supabase } from "@/lib/supabase"
-import { StatusBadge } from "./StatusBadge"
+import {useState} from "react"
+import {supabase} from "@/lib/supabase"
+import {StatusBadge} from "./StatusBadge"
+import toast from "react-hot-toast"
 
 interface Props {
     jobId: string
     initialStatus: string | null
 }
 
-export const EditableStatus = ({ jobId, initialStatus }: Props) => {
+export const EditableStatus = ({jobId, initialStatus}: Props) => {
     const [isEditing, setIsEditing] = useState(false)
     const [status, setStatus] = useState(initialStatus ?? "unknown")
 
@@ -17,13 +18,13 @@ export const EditableStatus = ({ jobId, initialStatus }: Props) => {
         setStatus(newStatus)
         setIsEditing(false)
 
-        const { error } = await supabase
+        const {error} = await supabase
             .from("jobs")
-            .update({ status: newStatus })
+            .update({status: newStatus})
             .eq("id", jobId)
 
         if (error) {
-            alert("Ошибка при обновлении: " + error.message)
+            toast.error("Ошибка при обновлении: " + error.message)
         }
     }
 
@@ -43,7 +44,7 @@ export const EditableStatus = ({ jobId, initialStatus }: Props) => {
         </select>
     ) : (
         <div className="cursor-pointer " onClick={() => setIsEditing(true)}>
-            <StatusBadge status={status}  />
+            <StatusBadge status={status}/>
         </div>
     )
 }

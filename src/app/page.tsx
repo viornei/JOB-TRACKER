@@ -1,20 +1,42 @@
 'use client'
 
-import { supabase } from "@/lib/supabase"
+import {useUser} from "@/features/auth/hooks/useUser"
+import {useRouter} from "next/navigation"
+import {useEffect} from "react"
+import Link from "next/link"
 
-export default function Home() {
-  const testConnection = async () => {
-    const { data, error } = await supabase.from('test').select('*')
-    console.log("data", data)
-    console.log("error", error)
-  }
+export default function HomePage() {
+    const {userEmail, loading} = useUser()
+    const router = useRouter()
 
-  return (
-      <main className="p-4">
-        <h1 className="text-xl font-bold">Home Page</h1>
-        <button onClick={testConnection} className="mt-4 p-2 bg-blue-500 text-white rounded">
-          Проверить Supabase
-        </button>
-      </main>
-  )
+    useEffect(() => {
+        if (!loading && userEmail) {
+            router.push("/dashboard")
+        }
+    }, [loading, userEmail, router])
+
+    if (loading) {
+        return <p className="text-center mt-10">Загрузка...</p>
+    }
+
+    return (
+        <div className="min-h-screen flex flex-col items-center justify-center px-4">
+            <h1 className="text-3xl font-bold mb-6 text-center">Добро пожаловать в JobTracker ✨</h1>
+
+            <div className="flex gap-4">
+                <Link
+                    href="/login"
+                    className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
+                >
+                    Войти
+                </Link>
+                <Link
+                    href="/register"
+                    className="bg-gray-100 text-gray-800 px-6 py-2 rounded hover:bg-gray-200 transition"
+                >
+                    Зарегистрироваться
+                </Link>
+            </div>
+        </div>
+    )
 }

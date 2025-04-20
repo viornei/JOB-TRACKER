@@ -1,14 +1,16 @@
 'use client'
 
-import { useEffect, useState } from "react"
-import { supabase } from "@/lib/supabase"
+import {useEffect, useState} from "react"
+import {supabase} from "@/lib/supabase"
+import toast from "react-hot-toast"
 
 interface RemoteJob {
     id: number
     title: string
     company: string
     link: string
-    tags?: string[]
+    tags?: string[],
+    description: string,
 }
 
 export default function ImportPage() {
@@ -38,22 +40,23 @@ export default function ImportPage() {
     }, [])
 
     const handleImport = async (job: RemoteJob) => {
-        const { data: session } = await supabase.auth.getSession()
+        const {data: session} = await supabase.auth.getSession()
         const userId = session.session?.user.id
 
-        if (!userId) return alert("Ты не авторизован")
+        if (!userId) return toast("Ты не авторизован")
 
-        const { error } = await supabase.from("jobs").insert({
+        const {error} = await supabase.from("jobs").insert({
             title: job.title,
             company: job.company,
+            link: job.link,
+            tags: job.tags || [],
+            description: job.description || "",
             status: "unknown",
-
-            notes: `Источник: ${job.link}\n\nКомпания: ${job.company}\n\nОписание: ${job.description || "—"}\n\nТеги: ${job.tags?.join(", ") || "—"}`,
             user_id: userId,
         })
 
         if (error) {
-            alert("Ошибка при импорте: " + error.message)
+            toast.error("Ошибка при импорте: " + error.message)
         } else {
             setImportedIds((prev) => [...prev, job.id])
         }
@@ -72,10 +75,13 @@ export default function ImportPage() {
 
             {loading ? (
                 <p>Загрузка...</p>
-            ) : (
+            ) : (<>
+                <p className="text-sm text-gray-500 mb-2">
+                    Показано {filteredJobs.length} из {jobs.length} вакансий
+                </p>
                 <ul className="space-y-4">
                     {filteredJobs.map((job) => (
-                    <li key={job.id} className="border p-4 rounded shadow space-y-1">
+                        <li key={job.id} className="border p-4 rounded shadow space-y-1">
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h2 className="text-lg font-semibold">{job.title}</h2>
@@ -92,9 +98,7 @@ export default function ImportPage() {
                                         <div className="flex gap-2 mt-2 flex-wrap">
                                             {job.tags.map((tag, index) => (
                                                 <span key={`${tag}-${index}`}
-                                                    className="text-xs bg-gray-200 px-2 py-0.5 rounded"
-                                                >
-                          {tag}
+                                                      className="text-xs bg-gray-200 px-2 py-0.5 rounded">{tag}
                         </span>
                                             ))}
                                         </div>
@@ -115,7 +119,7 @@ export default function ImportPage() {
                         </li>
                     ))}
                 </ul>
-            )}
+            </>)}
         </div>
     )
 }

@@ -1,10 +1,11 @@
 'use client'
 
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { supabase } from "@/lib/supabase"
-import { useRouter } from "next/navigation"
+import {useForm} from "react-hook-form"
+import {zodResolver} from "@hookform/resolvers/zod"
+import {z} from "zod"
+import {supabase} from "@/lib/supabase"
+import {useRouter} from "next/navigation"
+import toast from "react-hot-toast"
 
 const jobSchema = z.object({
     title: z.string().min(1),
@@ -20,19 +21,19 @@ export const JobForm = () => {
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting },
+        formState: {errors, isSubmitting},
     } = useForm<JobFormData>({
         resolver: zodResolver(jobSchema),
     })
 
     const onSubmit = async (data: JobFormData) => {
         const {
-            data: { user },
+            data: {user},
         } = await supabase.auth.getUser()
 
         if (!user) return
 
-        const { error } = await supabase.from("jobs").insert([
+        const {error} = await supabase.from("jobs").insert([
             {
                 ...data,
                 user_id: user.id,
@@ -42,7 +43,7 @@ export const JobForm = () => {
         if (!error) {
             router.push("/dashboard")
         } else {
-            alert("Ошибка: " + error.message)
+            toast.error("Ошибка: " + error.message)
         }
     }
 
@@ -50,10 +51,10 @@ export const JobForm = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md mx-auto mt-8">
             <h2 className="text-xl font-bold text-center">Добавить вакансию</h2>
 
-            <input {...register("title")} placeholder="Название вакансии" className="w-full p-2 border rounded" />
+            <input {...register("title")} placeholder="Название вакансии" className="w-full p-2 border rounded"/>
             {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
 
-            <input {...register("company")} placeholder="Компания" className="w-full p-2 border rounded" />
+            <input {...register("company")} placeholder="Компания" className="w-full p-2 border rounded"/>
             {errors.company && <p className="text-sm text-red-500">{errors.company.message}</p>}
 
             <select {...register("status")} className="w-full p-2 border rounded">
@@ -63,7 +64,7 @@ export const JobForm = () => {
                 <option value="rejected">Отказ</option>
             </select>
 
-            <textarea {...register("notes")} placeholder="Заметки" className="w-full p-2 border rounded" />
+            <textarea {...register("notes")} placeholder="Заметки" className="w-full p-2 border rounded"/>
 
             <button
                 type="submit"
