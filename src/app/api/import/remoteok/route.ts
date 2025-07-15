@@ -10,8 +10,9 @@ export async function GET() {
     const data = await res.json()
 
     const jobs = data
-        .slice(1) // первый элемент — метаинформация
-        .map((job: any) => ({
+        .slice(1) 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((job: any) => ({
             id: job.id,
             title: job.position || job.title,
             company: job.company,
